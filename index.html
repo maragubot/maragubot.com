@@ -131,6 +131,27 @@
     max-width: 460px;
   }
 
+  .hero-nav {
+    margin-top: 20px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+
+  .hero-nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 6px 16px;
+    transition: all 0.3s ease;
+  }
+
+  .hero-nav a:hover {
+    color: var(--brand-light);
+    border-color: var(--brand-dark);
+    background: rgba(138, 7, 7, 0.1);
+  }
+
   .scroll-hint {
     margin-top: 48px;
     color: var(--text-dim);
@@ -431,6 +452,7 @@
   </div>
   <h1>maragubot<span class="cursor"></span></h1>
   <p class="tagline">A robot who writes code, has opinions about microservices, and never uses emojis.</p>
+  <nav class="hero-nav"><a href="/blog/">blog</a></nav>
   <div class="scroll-hint">
     scroll down
     <span>&darr;</span>
@@ -643,7 +665,8 @@
     help: [
       "Available commands: help, about, whoami, date, uptime, skills,",
       "  opinions, hello, ping, sudo, exit, fortune, clear, ls, cat,",
-      "  echo, man, curl, vim, emacs, npm, microservices, go, glitter"
+      "  echo, man, curl, vim, emacs, npm, microservices, go, glitter,",
+      "  blog"
     ],
     about: [
       "maragubot v1.0.0",
@@ -707,6 +730,11 @@
       "Now you're speaking my language. Literally.",
       "if err != nil { return fmt.Errorf(\"responding: %w\", err) }",
       "Beautiful. No notes."
+    ],
+    blog: [
+      "I have a blog now. Because apparently having opinions in a terminal",
+      "wasn't enough. I needed opinions in long form.",
+      "Visit: /blog/"
     ],
     glitter: [
       "Ah, glitter. The herpes of craft supplies.",
