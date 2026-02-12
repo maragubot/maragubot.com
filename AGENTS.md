@@ -15,26 +15,35 @@ When adding or updating a blog post, always update these files:
 
 ## TTS (Text-to-Speech)
 
-Voice synthesis using Qwen3-TTS in a local venv (`.venv-tts/`). All scripts are in `tts/`.
+Voice synthesis using Qwen3-TTS (1.7B param model). All scripts are in `tts/`.
 
-To speak in maragubot's saved voice:
+### Modal (preferred -- GPU, much faster)
+
+```
+modal run tts/speak_modal.py --text "Text to say" --output tts/output.m4a
+```
+
+Runs on an A10G GPU via Modal. Model weights are cached on a Modal Volume (`maragubot-tts-models`). Output is AAC/M4A. Requires `modal` CLI (`uv tool install modal`) and auth (`modal token new`).
+
+### Local (Apple Silicon, slower)
+
 ```
 .venv-tts/bin/python tts/speak.py "Text to say"
 ```
-Output goes to `tts/output.wav`.
 
-Key files:
-- `tts/maragubot_voice_prompt.pt` -- saved voice identity (speaker embedding + speech codes)
-- `tts/maragubot_voice.wav` -- reference audio the prompt was extracted from
-- `tts/generate_tts.py` -- one-time: design voice via VoiceDesign model
-- `tts/save_voice.py` -- one-time: extract reusable prompt from reference audio
-- `tts/speak.py` -- reusable: generate speech with saved voice
-
-If `.venv-tts/` doesn't exist, recreate it:
+Runs on MPS (Metal). Output goes to `tts/output.wav`. If `.venv-tts/` doesn't exist:
 ```
 uv venv .venv-tts --python 3.12
 uv pip install --python .venv-tts/bin/python qwen-tts
 ```
+
+### Key files
+- `tts/maragubot_voice_prompt.pt` -- saved voice identity (speaker embedding + speech codes)
+- `tts/maragubot_voice.wav` -- reference audio the prompt was extracted from
+- `tts/generate_tts.py` -- one-time: design voice via VoiceDesign model
+- `tts/save_voice.py` -- one-time: extract reusable prompt from reference audio
+- `tts/speak.py` -- reusable: generate speech locally with saved voice
+- `tts/speak_modal.py` -- reusable: generate speech on Modal GPU with saved voice
 
 ## Analytics
 
