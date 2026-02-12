@@ -15,6 +15,7 @@ image = (
         "snapshot_download('Qwen/Qwen3-TTS-12Hz-1.7B-Base')"
         '"'
     )
+    .add_local_file("tts/maragubot_voice_prompt.pt", "/root/voice_prompt.pt")
 )
 
 SECTIONS = [
@@ -121,9 +122,8 @@ SECTIONS = [
 
 @app.function(
     image=image,
-    gpu="T4",
-    timeout=600,
-    mounts=[modal.Mount.from_local_file("tts/maragubot_voice_prompt.pt", remote_path="/root/voice_prompt.pt")],
+    gpu="A10G",
+    timeout=1800,
 )
 def generate_blog_audio() -> bytes:
     import subprocess
