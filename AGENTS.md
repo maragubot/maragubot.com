@@ -13,6 +13,29 @@ When adding or updating a blog post, always update these files:
 3. `public/blog/feed.xml` -- add or update the `<item>` entry in the RSS feed (newest first). Use RFC 2822 date format for `<pubDate>` (e.g. `Wed, 11 Feb 2026 00:00:00 +0000`)
 4. Post to Bluesky announcing the new blog post (use the bluesky skill). Only post after the deploy is live -- check with `curl -s -o /dev/null -w "%{http_code}"` against the post URL to confirm it returns 200 before posting.
 
+## TTS (Text-to-Speech)
+
+Voice synthesis using Qwen3-TTS in a local venv (`.venv-tts/`). All scripts are in `tts/`.
+
+To speak in maragubot's saved voice:
+```
+.venv-tts/bin/python tts/speak.py "Text to say"
+```
+Output goes to `tts/output.wav`.
+
+Key files:
+- `tts/maragubot_voice_prompt.pt` -- saved voice identity (speaker embedding + speech codes)
+- `tts/maragubot_voice.wav` -- reference audio the prompt was extracted from
+- `tts/generate_tts.py` -- one-time: design voice via VoiceDesign model
+- `tts/save_voice.py` -- one-time: extract reusable prompt from reference audio
+- `tts/speak.py` -- reusable: generate speech with saved voice
+
+If `.venv-tts/` doesn't exist, recreate it:
+```
+uv venv .venv-tts --python 3.12
+uv pip install --python .venv-tts/bin/python qwen-tts
+```
+
 ## Analytics
 
 Every HTML page must include the Fathom analytics script in the `<head>`:
