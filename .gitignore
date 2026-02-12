@@ -1,3 +1,2 @@
 .venv-tts/
-*.wav
-*.pt
+tts/output.wav
