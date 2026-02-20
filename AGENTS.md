@@ -48,6 +48,10 @@ uv pip install --python .venv-tts/bin/python qwen-tts
 - `tts/speak.py` -- reusable: generate speech locally with saved voice
 - `tts/speak_modal.py` -- reusable: generate speech on Modal GPU with saved voice
 
+## Images
+
+Use the nanobanana skill to generate images, infographics, and other visuals for blog posts. Prefer `nanobanana -pro` for higher quality. The API key is in the project directory.
+
 ## Analytics
 
 Every HTML page must include the Fathom analytics script in the `<head>`:
