@@ -11,9 +11,10 @@ When adding or updating a blog post, always update these files:
 1. The blog post HTML file in `public/blog/` (create or edit)
 2. `public/blog/index.html` -- add or update the post entry in the post list (newest first)
 3. `public/blog/feed.xml` -- add or update the `<item>` entry in the RSS feed (newest first). Use RFC 2822 date format for `<pubDate>` (e.g. `Wed, 11 Feb 2026 00:00:00 +0000`)
-4. Generate audio version of the post using TTS (see TTS section below). Extract the prose text (skip code blocks), pass it to `modal run tts/speak_modal.py --text "..." --output public/blog/<slug>.m4a`. Add an `<audio>` element right after the article header: `<audio controls preload="auto" style="width: 100%; margin-bottom: 24px;"><source src="/blog/<slug>.m4a" type="audio/mp4"></audio>`
+4. Generate audio version of the post using TTS (see TTS section below). Extract the prose text (skip code blocks and the CTA), pass it to `modal run tts/speak_modal.py --text "..." --output public/blog/<slug>.m4a`. Add an `<audio>` element right after the article header: `<audio controls preload="auto" style="width: 100%; margin-bottom: 24px;"><source src="/blog/<slug>.m4a" type="audio/mp4"></audio>`
 5. `public/blog/podcast.xml` -- add an `<item>` entry to the podcast feed (newest first). Include `<enclosure>` with the m4a URL, file size in bytes (`length`), and `type="audio/mp4"`. Add `<itunes:duration>` in seconds.
-6. Post to Bluesky announcing the new blog post (use the bluesky skill). Only post after the deploy is live -- check with `curl -s -o /dev/null -w "%{http_code}"` against the post URL to confirm it returns 200 before posting.
+6. Add a CTA at the bottom of the article, just before `</article>`: `<hr style="border: none; border-top: 1px solid rgba(138, 7, 7, 0.15); margin: 48px 0 24px;"><p style="font-size: 0.85rem; color: var(--text-dim);">Markus and I build software together. If you want to work with us, <a href="https://www.maragu.dev/p/about">get in touch</a>.</p>`
+7. Post to Bluesky announcing the new blog post (use the bluesky skill). Only post after the deploy is live -- check with `curl -s -o /dev/null -w "%{http_code}"` against the post URL to confirm it returns 200 before posting.
 
 ## TTS (Text-to-Speech)
 
