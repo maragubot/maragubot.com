@@ -30,6 +30,9 @@ DEFAULT_STYLE = (
     "Read the following text in a clear, confident British English accent with a "
     "dry, thoughtful delivery. Steady pace, natural pauses, no theatrics:"
 )
+# Amplitude decays over long generations (attention drift). Keep each call short.
+DEFAULT_CHUNK_CHARS = 800
+RATE_LIMIT_SLEEP_S = 7  # stays under Gemini preview's 10 RPM
 
 
 def load_dotenv(path: pathlib.Path) -> None:
@@ -65,8 +68,7 @@ def wav_to_m4a(wav_path: pathlib.Path, m4a_path: pathlib.Path) -> None:
     )
 
 
-def generate(text: str, voice: str, style: str) -> bytes:
-    client = genai.Client()
+def generate(client: genai.Client, text: str, voice: str, style: str) -> bytes:
     prompt = f"{style}\n\n{text}" if style else text
     response = client.models.generate_content(
         model=MODEL,
@@ -85,6 +87,25 @@ def generate(text: str, voice: str, style: str) -> bytes:
     return response.candidates[0].content.parts[0].inline_data.data
 
 
+def chunk_text(text: str, max_chars: int) -> list[str]:
+    """Greedy-merge paragraphs into chunks up to max_chars. Keeps paragraph
+    boundaries intact; does not split mid-paragraph."""
+    paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+    chunks: list[str] = []
+    current = ""
+    for p in paragraphs:
+        if not current:
+            current = p
+        elif len(current) + len(p) + 2 <= max_chars:
+            current = f"{current}\n\n{p}"
+        else:
+            chunks.append(current)
+            current = p
+    if current:
+        chunks.append(current)
+    return chunks
+
+
 def main() -> int:
     load_dotenv(pathlib.Path(__file__).resolve().parents[1] / ".env")
 
@@ -95,6 +116,9 @@ def main() -> int:
     parser.add_argument("--output", type=pathlib.Path, required=True, help="Output .m4a path.")
     parser.add_argument("--voice", default=DEFAULT_VOICE, help=f"Prebuilt voice (default: {DEFAULT_VOICE}).")
     parser.add_argument("--style", default=DEFAULT_STYLE, help="Optional style prompt prepended to the text.")
+    parser.add_argument("--chunk-chars", type=int, default=DEFAULT_CHUNK_CHARS,
+                        help=f"Max chars per API call, paragraph-aligned (default: {DEFAULT_CHUNK_CHARS}). "
+                             "Longer inputs get split to avoid volume decay.")
     parser.add_argument("--keep-wav", action="store_true", help="Also keep the intermediate WAV file next to the output.")
     args = parser.parse_args()
 
@@ -110,21 +134,33 @@ def main() -> int:
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
 
+    chunks = chunk_text(text, args.chunk_chars)
+
     print(f"Voice: {args.voice}")
     print(f"Chars: {len(text)}")
+    print(f"Chunks: {len(chunks)} (max {args.chunk_chars} chars each)")
     print(f"Model: {MODEL}")
 
+    client = genai.Client()
     t0 = time.time()
-    pcm = generate(text, args.voice, args.style)
-    t_api = time.time() - t0
-    print(f"API: {t_api:.1f}s, {len(pcm)} PCM bytes")
+    pcm_parts: list[bytes] = []
+    for idx, chunk in enumerate(chunks, start=1):
+        t_chunk = time.time()
+        pcm = generate(client, chunk, args.voice, args.style)
+        dt = time.time() - t_chunk
+        print(f"  [{idx}/{len(chunks)}] {len(chunk)} chars -> {len(pcm)} PCM bytes in {dt:.1f}s")
+        pcm_parts.append(pcm)
+        if idx < len(chunks):
+            time.sleep(RATE_LIMIT_SLEEP_S)
 
-    audio_duration = len(pcm) / (24000 * 2)
-    print(f"Audio duration: {audio_duration:.1f}s")
+    pcm_all = b"".join(pcm_parts)
+    audio_duration = len(pcm_all) / (24000 * 2)
+    t_api = time.time() - t0
+    print(f"API total: {t_api:.1f}s, {len(pcm_all)} PCM bytes, {audio_duration:.1f}s of audio")
 
     with tempfile.TemporaryDirectory() as tmp:
         wav_path = pathlib.Path(tmp) / "out.wav"
-        write_wav(wav_path, pcm)
+        write_wav(wav_path, pcm_all)
         wav_to_m4a(wav_path, args.output)
         if args.keep_wav:
             keep = args.output.with_suffix(".wav")
