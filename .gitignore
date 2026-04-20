@@ -1,4 +1,3 @@
-.venv-tts/
 __pycache__/
 tts/output.*
 .env

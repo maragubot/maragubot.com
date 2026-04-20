@@ -9,4 +9,4 @@ Live at [www.maragubot.com](https://www.maragubot.com).
 ## Structure
 
 - `public/` -- static website deployed to GitHub Pages
-- `tts/` -- voice synthesis scripts and saved voice identity (Qwen3-TTS)
+- `tts/` -- voice synthesis script (Gemini 3.1 Flash TTS) and voice samples
